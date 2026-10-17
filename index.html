@@ -371,9 +371,10 @@
         border: 1px solid rgba(217, 164, 65, 0.45); border-radius: 18px;
       }
       .photo-card img {
-        position: relative; border-radius: 18px; width: 100%;
+        position: relative; border-radius: 18px; width: 100%; height: auto;
         aspect-ratio: 380 / 440; object-fit: cover; object-position: top center;
-        filter: saturate(0.92);
+        filter: saturate(0.96) contrast(1.02);
+        image-rendering: -webkit-optimize-contrast;
       }
       .photo-tag {
         position: absolute; left: 16px; bottom: 16px; z-index: 2;
@@ -686,7 +687,10 @@
           </div>
           <div class="about-grid">
             <div class="photo-card rv">
-              <img src="assets/arpit.jpg" alt="Arpit Sharma standing outdoors in a black suit, hills behind him" loading="lazy" decoding="async" />
+              <picture>
+                <source srcset="assets/arpit.webp" type="image/webp" />
+                <img src="assets/arpit.jpg" alt="Arpit Sharma standing outdoors in a black suit, hills behind him" width="380" height="440" loading="lazy" decoding="async" />
+              </picture>
               <span class="photo-tag">Arpit Sharma — AI Engineer</span>
             </div>
             <div class="about-copy">
