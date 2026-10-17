@@ -351,20 +351,15 @@
       .sec-head.on .sec-title { opacity: 1; transform: none; transition-delay: 0.12s; }
 
       /* On-scroll text reveal words */
-      .reveal-word {
-        display: inline-block;
-        transform: translateY(115%);
-        opacity: 0;
-        transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.65s ease;
-      }
-      .sec-head.on .reveal-word, #contact.on .reveal-word {
-        transform: translateY(0);
-        opacity: 1;
-      }
       .word-mask {
         display: inline-block;
         overflow: hidden;
         vertical-align: bottom;
+        line-height: 1.18;
+      }
+      .reveal-word {
+        display: inline-block;
+        will-change: transform, opacity;
       }
 
       /* ---------- about ---------- */
@@ -1434,26 +1429,87 @@
             .to("#stars", { y: 18, ease: "none", duration: 1 }, 0);
         });
 
-        /* ----- scrubbed section headers ----- */
-        document.querySelectorAll(".sec-head").forEach(function (head) {
-          var label = head.querySelector(".sec-label");
-          var title = head.querySelector(".sec-title");
-          var tl = gsap.timeline({
-            scrollTrigger: { trigger: head, start: "top 94%", end: "top 56%", scrub: 0.4 }
-          });
-          tl.fromTo(label, { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: "none" }, 0)
-            .fromTo(title, { y: 38, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "none" }, 0.18);
+        /* ----- on-scroll text reveals for headings ----- */
+        document.querySelectorAll(".text-reveal").forEach(function (heading) {
+          var words = heading.querySelectorAll(".reveal-word");
+          if (!words.length) return;
+          gsap.fromTo(words, 
+            { yPercent: 120, opacity: 0 },
+            {
+              yPercent: 0,
+              opacity: 1,
+              duration: 0.85,
+              stagger: 0.045,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: heading,
+                start: "top 88%",
+                toggleActions: "play none none none"
+              }
+            }
+          );
         });
 
-        /* ----- contact heading ----- */
-        gsap.fromTo("#contact .sec-label", { opacity: 0 },
-          { opacity: 1, ease: "none",
-            scrollTrigger: { trigger: "#contact .contact-title", start: "top 96%", end: "top 68%", scrub: 0.4 } });
-        gsap.fromTo("#contact .contact-title", { y: 46, opacity: 0, scale: 0.97 },
-          { y: 0, opacity: 1, scale: 1, ease: "none",
-            scrollTrigger: { trigger: "#contact .contact-title", start: "top 96%", end: "top 58%", scrub: 0.4 } });
+        /* ----- on-scroll labels ----- */
+        document.querySelectorAll(".sec-label").forEach(function (label) {
+          gsap.fromTo(label,
+            { y: 22, opacity: 0 },
+            {
+              y: 0, opacity: 1, duration: 0.6, ease: "power2.out",
+              scrollTrigger: { trigger: label, start: "top 92%", toggleActions: "play none none none" }
+            }
+          );
+        });
 
-        /* ----- project thumbnails ----- */
+        /* ----- on-scroll staggered cascade for projects ----- */
+        ScrollTrigger.batch(".proj", {
+          start: "top 88%",
+          onEnter: function (batch) {
+            gsap.fromTo(batch, 
+              { y: 50, opacity: 0 },
+              { y: 0, opacity: 1, duration: 0.75, stagger: 0.12, ease: "power2.out", overwrite: true }
+            );
+          },
+          once: true
+        });
+
+        /* ----- on-scroll staggered cascade for services ----- */
+        ScrollTrigger.batch(".svc", {
+          start: "top 90%",
+          onEnter: function (batch) {
+            gsap.fromTo(batch, 
+              { y: 35, opacity: 0, x: -16 },
+              { y: 0, opacity: 1, x: 0, duration: 0.7, stagger: 0.1, ease: "power2.out", overwrite: true }
+            );
+          },
+          once: true
+        });
+
+        /* ----- on-scroll staggered cascade for repos ----- */
+        ScrollTrigger.batch(".repo", {
+          start: "top 90%",
+          onEnter: function (batch) {
+            gsap.fromTo(batch, 
+              { y: 35, opacity: 0 },
+              { y: 0, opacity: 1, duration: 0.65, stagger: 0.08, ease: "power2.out", overwrite: true }
+            );
+          },
+          once: true
+        });
+
+        /* ----- on-scroll staggered cascade for contact rows ----- */
+        ScrollTrigger.batch(".c-row", {
+          start: "top 92%",
+          onEnter: function (batch) {
+            gsap.fromTo(batch, 
+              { y: 22, opacity: 0 },
+              { y: 0, opacity: 1, duration: 0.55, stagger: 0.08, ease: "power2.out", overwrite: true }
+            );
+          },
+          once: true
+        });
+
+        /* ----- project thumbnails parallax ----- */
         document.querySelectorAll(".proj .thumb img").forEach(function (img) {
           gsap.fromTo(img, { yPercent: -3 },
             { yPercent: 3, ease: "none",
