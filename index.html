@@ -200,8 +200,9 @@
         aspect-ratio: 1 / 1;
         border-radius: 50%;
         display: block;
+        /* the gold ring is drawn inside the canvas (see drawDots), so it
+           always aligns exactly with the dot circle — one ring only */
         box-shadow: 0 26px 60px rgba(0, 0, 0, 0.55);
-        cursor: pointer;
       }
       .hero-title {
         font-family: var(--font-display);
@@ -212,7 +213,6 @@
         text-align: center;
         display: flex; justify-content: center;
         perspective: 700px;
-        user-select: none;
       }
       .hero-title span {
         display: inline-block;
@@ -340,7 +340,6 @@
       .rv { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease-out, transform 0.65s cubic-bezier(0.22, 1, 0.36, 1); }
       .rv.on { opacity: 1; transform: none; }
       .rv.dl1 { transition-delay: 0.1s; } .rv.dl2 { transition-delay: 0.2s; } .rv.dl3 { transition-delay: 0.3s; } .rv.dl4 { transition-delay: 0.4s; }
-      
       /* section headers stagger internally: label first, then the title */
       .sec-head.rv { opacity: 1; transform: none; transition: none; }
       .sec-head .sec-label, .sec-head .sec-title {
@@ -350,20 +349,8 @@
       .sec-head.on .sec-label { opacity: 1; transform: none; transition-delay: 0s; }
       .sec-head.on .sec-title { opacity: 1; transform: none; transition-delay: 0.12s; }
 
-      /* On-scroll text reveal words */
-      .word-mask {
-        display: inline-block;
-        overflow: hidden;
-        vertical-align: bottom;
-        line-height: 1.18;
-      }
-      .reveal-word {
-        display: inline-block;
-        will-change: transform, opacity;
-      }
-
       /* ---------- about ---------- */
-      .about-grid { display: grid; grid-template-columns: 380px 1fr; gap: clamp(34px, 5vw, 72px); align-items: start; }
+      .about-grid { display: grid; grid-template-columns: 210px 1fr; gap: clamp(34px, 5vw, 72px); align-items: start; }
       .photo-card { position: relative; }
       .photo-card::before {
         content: ""; position: absolute; inset: 0;
@@ -371,23 +358,23 @@
         border: 1px solid rgba(217, 164, 65, 0.45); border-radius: 18px;
       }
       .photo-card img {
-        position: relative; border-radius: 18px; width: 100%; height: auto;
-        aspect-ratio: 380 / 440; object-fit: cover; object-position: top center;
-        filter: saturate(0.96) contrast(1.02);
-        image-rendering: -webkit-optimize-contrast;
+        position: relative; display: block; border-radius: 18px; width: 100%;
+        aspect-ratio: 4 / 5; object-fit: cover; object-position: center 22%;
+        filter: saturate(0.92);
       }
       .photo-tag {
-        position: absolute; left: 16px; bottom: 16px; z-index: 2;
-        background: rgba(5, 6, 7, 0.78); backdrop-filter: blur(8px);
+        position: relative; z-index: 2; display: block;
+        margin-top: 12px; text-align: center;
+        background: rgba(5, 6, 7, 0.78);
         border: 1px solid var(--line); border-radius: 10px;
-        padding: 9px 14px;
-        font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.18em;
-        color: var(--gold-hi); text-transform: uppercase;
+        padding: 9px 8px;
+        font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.1em;
+        color: var(--gold-hi); text-transform: uppercase; white-space: nowrap;
       }
       .about-copy p { margin: 0 0 18px; color: #c9ced6; font-size: 1.04rem; }
       .about-copy p strong { color: var(--ink); }
       .stats {
-        display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
         margin: 34px 0 8px;
       }
       .stat {
@@ -552,7 +539,7 @@
       /* ---------- responsive ---------- */
       @media (max-width: 900px) {
         .about-grid { grid-template-columns: 1fr; }
-        .photo-card { max-width: 340px; }
+        .photo-card { max-width: 230px; margin-inline: auto; width: 100%; }
         .stats { grid-template-columns: repeat(2, 1fr); }
         .proj-grid { grid-template-columns: 1fr; }
         .repo-grid { grid-template-columns: 1fr 1fr; }
@@ -593,16 +580,27 @@
         .scroll-cue { display: none; }
       }
 
-      /* ---------- GSAP scroll-driven FX ---------- */
+      /* ---------- GSAP scroll-driven FX ----------
+         The .gsap-on class is added by JS only when GSAP + ScrollTrigger
+         loaded successfully and reduced motion is off. While it is on,
+         GSAP owns these elements' transforms/opacity, so their CSS
+         transitions are disabled to keep scrubbed motion 1:1 with the
+         scroll position. Without it, the CSS reveals above run as-is. */
       html.gsap-on .sec-head .sec-label,
       html.gsap-on .sec-head .sec-title,
       html.gsap-on #contact .sec-label,
       html.gsap-on #contact .contact-title,
       html.gsap-on .proj .thumb img { transition: none; }
+      /* after the hero entrance has played, hand hero fades to GSAP too */
       html.gsap-on.fx-ready .hero-fade { transition: none; }
       html.gsap-on .stage, html.gsap-on .hero-title, html.gsap-on #stars { will-change: transform; }
 
-      /* ---------- 3D tilt cards ---------- */
+      /* ---------- 3D tilt cards ----------
+         The .tilt class and the --gx/--gy glare position are set by
+         the tilt script (fine pointers only, never under reduced
+         motion). The transform itself is inline while the pointer is
+         over the card and cleared on leave, so the CSS hover lift
+         above keeps working exactly as before. */
       .proj, .repo, .svc { position: relative; }
       .tilt { transform-style: preserve-3d; will-change: transform; }
       .tilt::after {
@@ -618,7 +616,7 @@
         html { scroll-behavior: auto; }
         *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
         #intro { display: none; }
-        .hero-title span, .hero-fade, .rv, .reveal-word, .sec-head .sec-label, .sec-head .sec-title { opacity: 1; transform: none; }
+        .hero-title span, .hero-fade, .rv, .sec-head .sec-label, .sec-head .sec-title { opacity: 1; transform: none; }
         .marquee-track { animation: none; }
       }
     </style>
@@ -683,24 +681,20 @@
         <div class="wrap">
           <div class="sec-head rv">
             <p class="sec-label">About Me</p>
-            <h2 class="sec-title text-reveal">Engineer by craft,<br />builder by <em>instinct</em></h2>
+            <h2 class="sec-title">Engineer by craft,<br />builder by <em>instinct</em></h2>
           </div>
           <div class="about-grid">
             <div class="photo-card rv">
-              <picture>
-                <source srcset="assets/arpit.webp" type="image/webp" />
-                <img src="assets/arpit.jpg" alt="Arpit Sharma standing outdoors in a black suit, hills behind him" width="380" height="440" loading="lazy" decoding="async" />
-              </picture>
+              <img src="assets/arpit-about.jpg" alt="Arpit Sharma standing outdoors in a black suit, hills behind him" loading="lazy" decoding="async" />
               <span class="photo-tag">Arpit Sharma — AI Engineer</span>
             </div>
             <div class="about-copy">
               <p class="rv">I'm an <strong>AI Engineer</strong> with <strong>10 months of hands-on industry experience</strong> building production systems — an HRMS platform serving <strong>200+ users</strong>, a client-facing AI therapy voice bot trained on real counseling data, and AI video and virtual-influencer generation pipelines.</p>
               <p class="rv dl1">I'm currently an <strong>MCA (AI &amp; ML)</strong> candidate at Shoolini University, with a <strong>published NLP research paper</strong> (ICNARI-2026, NIT Patna) and a stint as a <strong>Google Gemini Student Ambassador 2025–26</strong>. Through my studio, Bubble Web Studio, I help businesses ship fast, polished web products and AI systems that actually get used.</p>
-              <div class="stats rv dl1" id="statsGrid">
-                <div class="stat"><span class="num counter" data-target="200" data-suffix="+">200+</span><span class="lbl">Users on my HRMS platform</span></div>
-                <div class="stat"><span class="num counter" data-target="10" data-suffix=" mo">10<span style="font-size:1.1rem"> mo</span></span><span class="lbl">Industry experience at NB Media</span></div>
-                <div class="stat"><span class="num counter" data-target="1" data-suffix="">1</span><span class="lbl">Published NLP paper — ICNARI-2026</span></div>
-                <div class="stat"><span class="num counter" data-target="10" data-suffix="/10">10/10</span><span class="lbl">CGPA, final semester of BCA</span></div>
+              <div class="stats rv dl1">
+                <div class="stat"><span class="num">200+</span><span class="lbl">Users on my HRMS platform</span></div>
+                <div class="stat"><span class="num">10<span style="font-size:1.1rem"> mo</span></span><span class="lbl">Industry experience at NB Media</span></div>
+                <div class="stat"><span class="num">1</span><span class="lbl">Published NLP paper — ICNARI-2026</span></div>
               </div>
               <div class="sub-block rv">
                 <h3>Education</h3>
@@ -709,7 +703,7 @@
                   <span class="yrs">2026 — 2028</span>
                 </div>
                 <div class="edu-row">
-                  <div><span class="deg">BCA — AI &amp; Machine Learning</span><br /><span class="sch">Shoolini University, Solan · 10/10 CGPA in final semester</span></div>
+                  <div><span class="deg">BCA — AI &amp; Machine Learning</span><br /><span class="sch">Shoolini University, Solan</span></div>
                   <span class="yrs">2026</span>
                 </div>
               </div>
@@ -733,7 +727,7 @@
         <div class="wrap">
           <div class="sec-head rv">
             <p class="sec-label">What I Do</p>
-            <h2 class="sec-title text-reveal">Services</h2>
+            <h2 class="sec-title">Services</h2>
           </div>
           <div class="svc-list">
             <a class="svc rv" href="#contact">
@@ -770,7 +764,7 @@
         <div class="wrap">
           <div class="sec-head rv">
             <p class="sec-label">Selected Work</p>
-            <h2 class="sec-title text-reveal">Projects</h2>
+            <h2 class="sec-title">Projects</h2>
           </div>
           <div class="proj-grid">
             <article class="proj rv">
@@ -868,7 +862,7 @@
         <div class="wrap">
           <div class="sec-head rv">
             <p class="sec-label">Open Source</p>
-            <h2 class="sec-title text-reveal">Components &amp; <em>tools</em></h2>
+            <h2 class="sec-title">Components &amp; <em>tools</em></h2>
           </div>
           <div class="repo-grid">
             <article class="repo rv">
@@ -915,14 +909,11 @@
       <section id="contact">
         <div class="wrap">
           <p class="sec-label rv">Contact</p>
-          <h2 class="contact-title text-reveal rv dl1">LET'S BUILD<br />SOMETHING <em>REAL</em></h2>
+          <h2 class="contact-title rv dl1">LET'S BUILD<br />SOMETHING <em>REAL</em></h2>
           <p class="lead rv dl2">Have a project in mind — a website, an AI bot, an automation? My inbox is open. One conversation is all it takes to get started.</p>
           <div class="contact-rows rv dl2">
             <a class="c-row" href="mailto:arpitsharma4602@gmail.com">
               <span class="k">Email</span><span class="v">arpitsharma4602@gmail.com</span><span class="arr" aria-hidden="true">↗</span>
-            </a>
-            <a class="c-row" href="tel:+918091104602">
-              <span class="k">Phone</span><span class="v">+91 80911 04602</span><span class="arr" aria-hidden="true">↗</span>
             </a>
             <a class="c-row" href="https://www.linkedin.com/in/arpit-sharma-746484303" target="_blank" rel="noopener">
               <span class="k">LinkedIn</span><span class="v">arpit-sharma-746484303</span><span class="arr" aria-hidden="true">↗</span>
@@ -947,12 +938,6 @@
       <span>Solan, India</span>
       <a class="to-top" href="#home">Back to top ↑</a>
     </footer>
-
-    <!-- Local Offline-Ready Scripts -->
-    <script src="assets/dots-data.js"></script>
-    <script src="assets/three.min.js"></script>
-    <script src="assets/gsap.min.js"></script>
-    <script src="assets/ScrollTrigger.min.js"></script>
 
     <script>
       (function () {
@@ -983,16 +968,14 @@
           introDone = true;
           intro.classList.add("gone");
           setTimeout(function () { intro.style.display = "none"; }, 1000);
-          // Trigger the visible dots assembly right as intro lifts!
-          if (window.__triggerDotAssembly) {
-            window.__triggerDotAssembly();
-          }
         }
         if (reduced) {
           intro.style.display = "none";
           hero.classList.add("play");
           introDone = true;
         } else {
+          /* hero animates in underneath the intro overlay, so everything
+             is fully visible the moment the overlay lifts */
           setTimeout(function () {
             hero.classList.add("play");
           }, 30);
@@ -1022,7 +1005,16 @@
         var track = document.getElementById("marqueeTrack");
         track.innerHTML += track.innerHTML;
 
-        /* ---------- scroll-triggered reveals ---------- */
+        /* ---------- scroll-triggered reveals ----------
+           Blocks fade/slide in as they enter the viewport (staggered via
+           the .dl1/.dl2/.dl3 delay classes), like the reference reel's
+           site. There is deliberately NO blanket timer that reveals
+           everything after N seconds: that would play every entrance
+           off-screen before the user scrolls to it. The only fallback is
+           a position-aware sweep (scroll/resize + a slow poll) that
+           reveals an element solely once it has actually reached the
+           viewport — it exists in case IntersectionObserver never fires
+           in some webview, and it never pre-reveals below-fold content. */
         var rvEls = Array.prototype.slice.call(document.querySelectorAll(".rv"));
         if (reduced || !("IntersectionObserver" in window)) {
           rvEls.forEach(function (el) { el.classList.add("on"); });
@@ -1030,6 +1022,8 @@
           function markOn(el) {
             if (el.classList.contains("on")) return;
             el.classList.add("on");
+            /* once the entrance has played out, drop the stagger delay
+               so hover transitions on cards and rows respond instantly */
             setTimeout(function () { el.style.transitionDelay = "0s"; }, 1400);
           }
           var rvIO = new IntersectionObserver(function (entries) {
@@ -1041,7 +1035,6 @@
             });
           }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
           rvEls.forEach(function (el) { rvIO.observe(el); });
-
           var sweepQueued = false;
           function sweepRv() {
             sweepQueued = false;
@@ -1049,6 +1042,9 @@
             rvEls.forEach(function (el) {
               if (el.classList.contains("on")) return;
               var r = el.getBoundingClientRect();
+              /* already scrolled past, or its top has entered the
+                 viewport's reveal zone — safe to reveal now, the
+                 entrance transition still plays for in-view elements */
               if (r.bottom <= 0 || (r.top < vh * 0.94 && r.bottom > 0)) {
                 markOn(el);
                 rvIO.unobserve(el);
@@ -1064,54 +1060,6 @@
           window.addEventListener("resize", queueSweep);
           setInterval(sweepRv, 2000);
         }
-
-        /* ---------- On-scroll text reveals (masked word slide-up) ---------- */
-        document.querySelectorAll(".text-reveal").forEach(function (heading) {
-          var html = heading.innerHTML;
-          var parts = html.split(/(<[^>]+>|\s+)/);
-          var wordIndex = 0;
-          var newContent = "";
-          parts.forEach(function (part) {
-            if (!part) return;
-            if (part.startsWith("<") && part.endsWith(">")) {
-              newContent += part;
-            } else if (part.trim() === "") {
-              newContent += " ";
-            } else {
-              newContent += '<span class="word-mask"><span class="reveal-word" style="transition-delay:' + (wordIndex * 0.045) + 's">' + part + '</span></span>';
-              wordIndex++;
-            }
-          });
-          heading.innerHTML = newContent;
-        });
-
-        /* ---------- Live Counter Stats ---------- */
-        var statsGrid = document.getElementById("statsGrid");
-        var countersDone = false;
-        function runCounters() {
-          if (countersDone || !statsGrid) return;
-          var rect = statsGrid.getBoundingClientRect();
-          if (rect.top < window.innerHeight * 0.9) {
-            countersDone = true;
-            document.querySelectorAll(".counter").forEach(function (counter) {
-              var target = parseInt(counter.getAttribute("data-target"), 10) || 0;
-              var suffix = counter.getAttribute("data-suffix") || "";
-              var duration = 1400;
-              var start = performance.now();
-              function step(now) {
-                var p = Math.min((now - start) / duration, 1);
-                var ease = 1 - Math.pow(1 - p, 3);
-                var cur = Math.floor(ease * target);
-                counter.textContent = cur + suffix;
-                if (p < 1) requestAnimationFrame(step);
-                else counter.textContent = target + suffix;
-              }
-              requestAnimationFrame(step);
-            });
-          }
-        }
-        window.addEventListener("scroll", runCounters, { passive: true });
-        runCounters();
 
         /* ---------- typewriter ---------- */
         var roles = ["AI Engineer", "Full-Stack Developer", "Prompt Engineer"];
@@ -1131,12 +1079,23 @@
           })();
         }
 
-        /* ---------- hero dot-matrix portrait (assembly on reload) ---------- */
+        /* ---------- hero dot-matrix portrait ----------
+           Arpit's photo is only ever sampled, never displayed: its
+           pixels are read into a grid of uniform round white dots in
+           a black-and-white grade — dot size and opacity follow the
+           photo's luminance. Dots exist solely inside a circle
+           centered on his face, fly in from scattered positions when
+           the page loads, lean away from the pointer as it moves
+           across the hero, and — once settled — link to their nearest
+           neighbours with faint gold lines, a constellation that
+           traces the face. A single gold ring is drawn in the canvas
+           around the circle. */
         var dotCanvas = document.getElementById("dotPortrait");
         if (dotCanvas) {
           var dctx = dotCanvas.getContext("2d");
-          var DS = 800;                    /* canvas px */
-          var DGAP = 9;                    /* grid spacing, canvas px */
+          var t0 = performance.now();
+          var DS = 800;                    /* canvas px (2x display size) */
+          var DGAP = 10;                   /* grid spacing, canvas px */
           var DCX = DS / 2, DCY = DS / 2;  /* circle centre */
           var DRAD = DS / 2 - DGAP;        /* circle radius */
           var dots = [];
@@ -1147,94 +1106,61 @@
           var ptr = { x: -9999, y: -9999 };
 
           function buildDots(img) {
-            dots = [];
-            // If raw precomputed dots data is available, use it for instant perfect rendering
-            if (window.__HERO_DOTS__ && window.__HERO_DOTS__.length > 0) {
-              var raw = window.__HERO_DOTS__;
-              for (var i = 0; i < raw.length; i++) {
-                var d = raw[i];
+            var iw = img.naturalWidth, ih = img.naturalHeight;
+            if (!iw || !ih) return;
+            /* cover-fit the photo into the square, face-weighted
+               toward the top, matching the old circular crop */
+            var scale = Math.max(DS / iw, DS / ih);
+            var dw = iw * scale, dh = ih * scale;
+            var ox = (DS - dw) * 0.5, oy = (DS - dh) * 0.18;
+            var off = document.createElement("canvas");
+            off.width = DS; off.height = DS;
+            var octx = off.getContext("2d");
+            octx.drawImage(img, ox, oy, dw, dh);
+            var data;
+            try { data = octx.getImageData(0, 0, DS, DS).data; } catch (e) { return; }
+            for (var gy = DGAP / 2; gy < DS; gy += DGAP) {
+              for (var gx = DGAP / 2; gx < DS; gx += DGAP) {
+                var ddx = gx - DCX, ddy = gy - DCY;
+                if (ddx * ddx + ddy * ddy > DRAD * DRAD) continue;
+                var px = (Math.floor(gy) * DS + Math.floor(gx)) * 4;
+                var lum = (0.2126 * data[px] + 0.7152 * data[px + 1] + 0.0722 * data[px + 2]) / 255;
+                var b = Math.pow(lum, 0.75);
+                if (b < 0.05) continue;
                 var ang = Math.random() * Math.PI * 2;
-                var dist = 180 + Math.random() * 520;
+                var dist = 120 + Math.random() * 430;
                 dots.push({
-                  hx: d[0], hy: d[1],
+                  hx: gx, hy: gy,
                   sx: DCX + Math.cos(ang) * dist,
                   sy: DCY + Math.sin(ang) * dist,
-                  r: Math.max(1.1, (DGAP * 0.44) * (0.25 + 0.75 * d[5])),
-                  a: 0.25 + 0.75 * d[5],
-                  delay: Math.random() * 0.38,
+                  r: DGAP * 0.46 * (0.22 + 0.78 * b),
+                  a: 0.22 + 0.78 * b,
+                  delay: Math.random() * 0.5,
                   ox: 0, oy: 0
                 });
               }
-            } else if (img && img.naturalWidth) {
-              var iw = img.naturalWidth, ih = img.naturalHeight;
-              var scale = Math.max(DS / iw, DS / ih);
-              var dw = iw * scale, dh = ih * scale;
-              var ox = (DS - dw) * 0.5, oy = (DS - dh) * 0.18;
-              var off = document.createElement("canvas");
-              off.width = DS; off.height = DS;
-              var octx = off.getContext("2d");
-              octx.drawImage(img, ox, oy, dw, dh);
-              var data;
-              try { data = octx.getImageData(0, 0, DS, DS).data; } catch (e) { return; }
-              for (var gy = DGAP / 2; gy < DS; gy += DGAP) {
-                for (var gx = DGAP / 2; gx < DS; gx += DGAP) {
-                  var ddx = gx - DCX, ddy = gy - DCY;
-                  if (ddx * ddx + ddy * ddy > DRAD * DRAD) continue;
-                  var px = (Math.floor(gy) * DS + Math.floor(gx)) * 4;
-                  var lum = (0.2126 * data[px] + 0.7152 * data[px + 1] + 0.0722 * data[px + 2]) / 255;
-                  var b = Math.pow(lum, 0.75);
-                  if (b < 0.05) continue;
-                  var ang = Math.random() * Math.PI * 2;
-                  var dist = 180 + Math.random() * 520;
-                  dots.push({
-                    hx: gx, hy: gy,
-                    sx: DCX + Math.cos(ang) * dist,
-                    sy: DCY + Math.sin(ang) * dist,
-                    r: DGAP * 0.46 * (0.22 + 0.78 * b),
-                    a: 0.22 + 0.78 * b,
-                    delay: Math.random() * 0.38,
-                    ox: 0, oy: 0
-                  });
-                }
-              }
             }
             dotsBuilt = true;
-          }
-
-          function triggerAssembly() {
-            if (!dotsBuilt) buildDots(null);
-            // Re-randomize starting positions so they visibly fly in together on reload
-            for (var i = 0; i < dots.length; i++) {
-              var d = dots[i];
-              var ang = Math.random() * Math.PI * 2;
-              var dist = 220 + Math.random() * 520;
-              d.sx = DCX + Math.cos(ang) * dist;
-              d.sy = DCY + Math.sin(ang) * dist;
-              d.ox = 0; d.oy = 0;
-            }
-            // Assemble smoothly over 1100ms
-            assemblyAt = performance.now();
+            /* begin assembling just as the intro overlay lifts */
+            assemblyAt = performance.now() + Math.max(0, 1050 - (performance.now() - t0));
             if (reduced) drawDots(1);
-            else {
-              dotRunning = true;
-              requestAnimationFrame(dotLoop);
-            }
+            else requestAnimationFrame(dotLoop);
           }
-          window.__triggerDotAssembly = triggerAssembly;
 
           function drawDots(now) {
             dctx.clearRect(0, 0, DS, DS);
             var INF = 190, PUSH = 30;
             var i, d, p, e;
-            /* pass 1 — settle every dot's position */
+            /* pass 1 — settle every dot's current position (assembly
+               flight + pointer push), stored for the link pass */
             for (i = 0; i < dots.length; i++) {
               d = dots[i];
               p = 1;
               if (now !== 1) {
-                p = (now - assemblyAt) / 1100 - d.delay;
+                p = (now - assemblyAt) / 850 - d.delay;
                 p = p < 0 ? 0 : (p > 1 ? 1 : p);
               }
-              e = 1 - Math.pow(1 - p, 3.5);
+              e = 1 - Math.pow(1 - p, 3);
               var tx = 0, ty = 0;
               var mdx = d.hx - ptr.x, mdy = d.hy - ptr.y;
               var md2 = mdx * mdx + mdy * mdy;
@@ -1249,13 +1175,17 @@
               d.cy = d.sy + (d.hy - d.sy) * e + d.oy * e;
               d.ce = e;
             }
-
-            /* pass 2 — constellation links */
-            var LINK = 16;
+            /* pass 2 — constellation links: faint gold lines between
+               dots that sit close together, so the portrait reads as a
+               connected network. A spatial grid keeps the neighbour
+               checks cheap, and a link only appears once both of its
+               dots have mostly settled — the web fades in as the face
+               assembles. */
+            var LINK = 17;
             var grid = {};
             for (i = 0; i < dots.length; i++) {
               d = dots[i];
-              if (d.ce < 0.6) continue;
+              if (d.ce < 0.55) continue;
               var gk = Math.floor(d.cx / LINK) + ":" + Math.floor(d.cy / LINK);
               (grid[gk] || (grid[gk] = [])).push(i);
             }
@@ -1284,8 +1214,7 @@
             dctx.strokeStyle = "rgba(217,164,65,0.18)";
             dctx.lineWidth = 1.2;
             dctx.stroke();
-
-            /* pass 3 — dots */
+            /* pass 3 — the dots themselves, on top of the links */
             for (i = 0; i < dots.length; i++) {
               d = dots[i];
               if (d.ce <= 0) continue;
@@ -1294,8 +1223,7 @@
               dctx.fillStyle = "rgba(240,242,246," + (d.a * d.ce).toFixed(3) + ")";
               dctx.fill();
             }
-
-            /* gold ring */
+            /* one clean gold ring around the portrait circle */
             dctx.beginPath();
             dctx.arc(DCX, DCY, DRAD + 4, 0, Math.PI * 2);
             dctx.strokeStyle = "rgba(217,164,65,0.5)";
@@ -1331,16 +1259,12 @@
             ptr.x = -9999; ptr.y = -9999;
           });
 
-          // Clicking portrait re-scatters and reassembles!
-          dotCanvas.addEventListener("click", triggerAssembly);
-
-          buildDots(null);
           var dotImg = new Image();
           dotImg.onload = function () { buildDots(dotImg); };
           dotImg.src = "assets/arpit.jpg";
         }
 
-        /* ---------- 2D fallback starfield ---------- */
+        /* ---------- starfield ---------- */
         var sc = document.getElementById("stars");
         var sctx = sc.getContext("2d");
         var stars = [], sw = 0, sh = 0;
@@ -1364,6 +1288,7 @@
         var starRunning = !reduced;
         function drawStars(t) {
           if (!starRunning) return;
+          /* the Three.js starfield owns the sky once it is live */
           if (window.__threeStars) { starRunning = false; return; }
           sctx.clearRect(0, 0, sw, sh);
           for (var i = 0; i < stars.length; i++) {
@@ -1377,7 +1302,20 @@
           requestAnimationFrame(drawStars);
         }
         if (!reduced) requestAnimationFrame(drawStars);
-
+        else { /* single static frame */
+          sc.width = window.innerWidth; sc.height = window.innerHeight;
+          drawStarsStatic();
+        }
+        function drawStarsStatic() {
+          sizeStars();
+          for (var i = 0; i < stars.length; i++) {
+            var st = stars[i];
+            sctx.beginPath();
+            sctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+            sctx.fillStyle = st.gold ? "rgba(242,205,126,0.6)" : "rgba(230,235,245,0.55)";
+            sctx.fill();
+          }
+        }
         document.addEventListener("visibilitychange", function () {
           if (reduced) return;
           starRunning = !document.hidden;
@@ -1387,7 +1325,11 @@
       })();
     </script>
 
-    <!-- GSAP + ScrollTrigger -->
+    <!-- GSAP + ScrollTrigger: scroll-driven layer (parallax hero, pinned
+         hero beat, scrubbed reveals). Classic CDN builds; if they fail to
+         load, the script below no-ops and the CSS reveals carry the page. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script>
       (function () {
         "use strict";
@@ -1397,13 +1339,21 @@
         ScrollTrigger.config({ ignoreMobileResize: true });
         var root = document.documentElement;
         root.classList.add("gsap-on");
+        /* let the hero's CSS entrance finish before GSAP takes over its
+           fade elements (their transitions are disabled by .fx-ready) */
         setTimeout(function () { root.classList.add("fx-ready"); }, 1800);
 
+        /* starfield sits slightly oversized so its parallax drift never
+           exposes an edge */
         gsap.set("#stars", { scale: 1.08, transformOrigin: "center center" });
 
         var mm = gsap.matchMedia();
 
-        /* ----- hero: layered parallax + one pinned beat (desktop) ----- */
+        /* ----- hero: layered parallax + one pinned beat (desktop) -----
+           The hero pins for an extra 45% of viewport scroll while its
+           layers separate: portrait drifts down (reads as slower than
+           the scroll), headline races up, copy fades out, stars and the
+           gold glow shift at their own rates. */
         mm.add("(min-width: 900px)", function () {
           var tl = gsap.timeline({
             scrollTrigger: {
@@ -1433,87 +1383,28 @@
             .to("#stars", { y: 18, ease: "none", duration: 1 }, 0);
         });
 
-        /* ----- on-scroll text reveals for headings ----- */
-        document.querySelectorAll(".text-reveal").forEach(function (heading) {
-          var words = heading.querySelectorAll(".reveal-word");
-          if (!words.length) return;
-          gsap.fromTo(words, 
-            { yPercent: 120, opacity: 0 },
-            {
-              yPercent: 0,
-              opacity: 1,
-              duration: 0.85,
-              stagger: 0.045,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: heading,
-                start: "top 88%",
-                toggleActions: "play none none none"
-              }
-            }
-          );
+        /* ----- scrubbed section headers: label leads, title follows,
+           both tied to scroll position rather than a one-shot trigger --- */
+        document.querySelectorAll(".sec-head").forEach(function (head) {
+          var label = head.querySelector(".sec-label");
+          var title = head.querySelector(".sec-title");
+          var tl = gsap.timeline({
+            scrollTrigger: { trigger: head, start: "top 94%", end: "top 56%", scrub: 0.4 }
+          });
+          tl.fromTo(label, { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: "none" }, 0)
+            .fromTo(title, { y: 38, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "none" }, 0.18);
         });
 
-        /* ----- on-scroll labels ----- */
-        document.querySelectorAll(".sec-label").forEach(function (label) {
-          gsap.fromTo(label,
-            { y: 22, opacity: 0 },
-            {
-              y: 0, opacity: 1, duration: 0.6, ease: "power2.out",
-              scrollTrigger: { trigger: label, start: "top 92%", toggleActions: "play none none none" }
-            }
-          );
-        });
+        /* ----- contact heading: scrubbed rise + settle ----- */
+        gsap.fromTo("#contact .sec-label", { opacity: 0 },
+          { opacity: 1, ease: "none",
+            scrollTrigger: { trigger: "#contact .contact-title", start: "top 96%", end: "top 68%", scrub: 0.4 } });
+        gsap.fromTo("#contact .contact-title", { y: 46, opacity: 0, scale: 0.97 },
+          { y: 0, opacity: 1, scale: 1, ease: "none",
+            scrollTrigger: { trigger: "#contact .contact-title", start: "top 96%", end: "top 58%", scrub: 0.4 } });
 
-        /* ----- on-scroll staggered cascade for projects ----- */
-        ScrollTrigger.batch(".proj", {
-          start: "top 88%",
-          onEnter: function (batch) {
-            gsap.fromTo(batch, 
-              { y: 50, opacity: 0 },
-              { y: 0, opacity: 1, duration: 0.75, stagger: 0.12, ease: "power2.out", overwrite: true }
-            );
-          },
-          once: true
-        });
-
-        /* ----- on-scroll staggered cascade for services ----- */
-        ScrollTrigger.batch(".svc", {
-          start: "top 90%",
-          onEnter: function (batch) {
-            gsap.fromTo(batch, 
-              { y: 35, opacity: 0, x: -16 },
-              { y: 0, opacity: 1, x: 0, duration: 0.7, stagger: 0.1, ease: "power2.out", overwrite: true }
-            );
-          },
-          once: true
-        });
-
-        /* ----- on-scroll staggered cascade for repos ----- */
-        ScrollTrigger.batch(".repo", {
-          start: "top 90%",
-          onEnter: function (batch) {
-            gsap.fromTo(batch, 
-              { y: 35, opacity: 0 },
-              { y: 0, opacity: 1, duration: 0.65, stagger: 0.08, ease: "power2.out", overwrite: true }
-            );
-          },
-          once: true
-        });
-
-        /* ----- on-scroll staggered cascade for contact rows ----- */
-        ScrollTrigger.batch(".c-row", {
-          start: "top 92%",
-          onEnter: function (batch) {
-            gsap.fromTo(batch, 
-              { y: 22, opacity: 0 },
-              { y: 0, opacity: 1, duration: 0.55, stagger: 0.08, ease: "power2.out", overwrite: true }
-            );
-          },
-          once: true
-        });
-
-        /* ----- project thumbnails parallax ----- */
+        /* ----- project thumbnails: image drifts inside its frame as the
+           card crosses the viewport (scrubbed parallax) ----- */
         document.querySelectorAll(".proj .thumb img").forEach(function (img) {
           gsap.fromTo(img, { yPercent: -3 },
             { yPercent: 3, ease: "none",
@@ -1524,7 +1415,11 @@
       })();
     </script>
 
-    <!-- Three.js: Original crisp true-3D starfield -->
+    <!-- Three.js: true-3D starfield behind the hero. Classic CDN build;
+         if it fails to load, WebGL is unavailable, or reduced motion is
+         on, this no-ops and the 2D canvas starfield above stays in
+         charge (it only stands down once this layer is live). -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
       (function () {
         "use strict";
@@ -1549,6 +1444,9 @@
         var camera = new THREE.PerspectiveCamera(60, 1, 0.1, 500);
         camera.position.set(0, 0, 70);
 
+        /* tight, sharp sprite: a hard bright core with only a whisper
+           of falloff, so points read as crisp stars — never as the
+           big soft bokeh blobs a wide gradient produces */
         function makeSprite() {
           var c = document.createElement("canvas");
           c.width = c.height = 64;
@@ -1564,6 +1462,8 @@
         }
         var sprite = makeSprite();
 
+        /* two depth layers: a sparse field of larger near stars and a
+           dense field of small far ones, gold dusted through both */
         function makeLayer(count, size, spread) {
           var pos = new Float32Array(count * 3);
           var col = new Float32Array(count * 3);
@@ -1582,6 +1482,9 @@
           var mat = new THREE.PointsMaterial({
             size: size, map: sprite, vertexColors: true, transparent: true,
             depthWrite: false, blending: THREE.AdditiveBlending,
+            /* fixed pixel sizes, a few px at most: with attenuation
+               on, the closest points ballooned into giant blurry
+               blobs that swamped the hero */
             sizeAttenuation: false, opacity: 0.85
           });
           return new THREE.Points(geo, mat);
@@ -1601,12 +1504,15 @@
         sizeSky();
         window.addEventListener("resize", sizeSky);
 
+        /* pointer parallax: the camera eases toward the pointer so the
+           near layer slides against the far one — the depth cue */
         var mx = 0, my = 0, tx = 0, ty = 0;
         window.addEventListener("pointermove", function (e) {
           tx = (e.clientX / window.innerWidth - 0.5) * 2;
           ty = (e.clientY / window.innerHeight - 0.5) * 2;
         }, { passive: true });
 
+        /* pause when the hero has scrolled away or the tab is hidden */
         var heroEl = document.querySelector(".hero");
         var heroNear = true;
         if ("IntersectionObserver" in window && heroEl) {
@@ -1625,6 +1531,7 @@
           my += (ty - my) * 0.045;
           sky.rotation.y = t * 0.000012 + mx * 0.03;
           sky.rotation.x = Math.sin(t * 0.00005) * 0.02 + my * 0.02;
+          /* a whisper of scroll drift, in step with the GSAP parallax */
           sky.position.y = Math.min(window.scrollY * 0.006, 14);
           camera.position.x = mx * 4.5;
           camera.position.y = -my * 2.6;
@@ -1636,13 +1543,18 @@
           if (!running && heroNear && !document.hidden) requestAnimationFrame(loop);
         }
 
+        /* hand the sky over: the 2D loop stands down on its next frame
+           and CSS swaps which canvas is visible */
         window.__threeStars = true;
         document.documentElement.classList.add("three-on");
         wake();
       })();
     </script>
 
-    <!-- 3D Card Tilt -->
+    <!-- 3D tilt: project / repo / service cards lean toward the pointer
+         (max ~8deg, gentler on the wide service rows) with a gold glare
+         that tracks the pointer. Fine pointers only; the inline
+         transform is cleared on leave so the CSS hover lift resumes. -->
     <script>
       (function () {
         "use strict";
