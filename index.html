@@ -352,15 +352,11 @@
       /* ---------- about ---------- */
       .about-grid { display: grid; grid-template-columns: 210px 1fr; gap: clamp(34px, 5vw, 72px); align-items: start; }
       .photo-card { position: relative; }
-      .photo-card::before {
-        content: ""; position: absolute; inset: 0;
-        transform: translate(14px, 14px);
-        border: 1px solid rgba(217, 164, 65, 0.45); border-radius: 18px;
-      }
       .photo-card img {
         position: relative; display: block; border-radius: 18px; width: 100%;
         aspect-ratio: 4 / 5; object-fit: cover; object-position: center 22%;
         filter: saturate(0.92);
+        border: 1px solid rgba(217, 164, 65, 0.55);
       }
       .photo-tag {
         position: relative; z-index: 2; display: block;
